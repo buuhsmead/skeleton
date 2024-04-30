@@ -1,0 +1,9 @@
+
+== grpcurl
+
+
+* podman-build.sh for local inner loop creation of the container image
+* podman-run.sh for local inner loop run of the container image
+
+
+./skeleton/kustomize/overlays/grpcurl for OpenShift deployment
