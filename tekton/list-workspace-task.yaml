@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: list-workspace
+spec:
+  results:
+    - name: output
+      type: string
+  workspaces:
+    - name: output
+      readOnly: true
+
+  steps:
+    - name: listing
+      image: registry.access.redhat.com/ubi9/ubi
+      workingDir: /workspace/output
+      command: [ "/bin/bash", "-c" ]
+      args:
+        - |-
+          set -ex
+          find /workspace

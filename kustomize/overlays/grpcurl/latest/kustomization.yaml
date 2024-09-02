@@ -5,10 +5,15 @@ kind: Kustomization
   # app.openshift.io/vcs-url: "https://github.com/buuhsmead/grpcurl.git"
 
 resources:
-  - ../../../base/grpcurl/
+- ../../../base/grpcurl/
 
 labels:
-  - includeSelectors: true
-    pairs:
-      app: grpcurl
-      version: v1.87
+- includeSelectors: true
+  pairs:
+    app: grpcurl
+    version: v1.87
+
+images:
+- name: localhost/grpcurl
+  newName: quay.io/hdaems/ubi8-grpcurl
+  newTag: latest

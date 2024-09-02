@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+
+commonAnnotations:
+  app.openshift.io/vcs-url: https://github.com/buuhsmead/grpc-with-quarkus.git
+  app.quarkus.io/build-timestamp: <<unknown>>
+  app.quarkus.io/commit-id: <<unknown>>
+
+# - ns.yaml
+resources:
+- sa.yaml
+- is-jdk.yaml
+- is-app.yaml
+- svc.yaml
+- bc.yaml
+- dc.yaml
+labels:
+- includeSelectors: true
+  pairs:
+    app: grpc-with-quarkus
+    app.kubernetes.io/name: grpc-with-quarkus
+    app.kubernetes.io/version: 0.1.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+    version: v1

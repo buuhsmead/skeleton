@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: fetch-pipeline
+  generateName: fetch-pipeline-
+spec:
+  pipelineRef:
+    name: build-and-deploy
+  params:
+    - name: GIT_REPO
+      value: https://github.com/buuhsmead/skeleton.git
+    - name: GIT_DIR
+      value: "apps/grpcurl"
+    - name: IMAGE
+      value: image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/grpcurl
+    - name: CONTAINERFILE
+      value: "./Containerfile"
+  workspaces:
+    - name: app-build
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 500Mi
+          volumeMode: Filesystem

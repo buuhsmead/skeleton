@@ -1,0 +1,28 @@
+kind: VirtualService
+apiVersion: networking.istio.io/v1beta1
+metadata:
+  name: ivs
+  # namespace: app-nees-nui-app
+spec:
+  hosts:
+    - grpc-with-quarkus.app-nees-nui.freubel.sandbox2538.opentlc.com
+  gateways:
+    - igw
+  http:
+    - name: http-ingress
+      match:
+        - uri: # It is important to distinguish between the two ports based on http path!
+            prefix: '^/hello*'
+      route:
+        - destination:
+            host: grpc-with-quarkus.app-nees-nui-app.svc.cluster.local
+            subset: testing
+            port:
+              number: 8080
+    - name: grpc-ingress
+      route:
+        - destination:
+            host: grpc-with-quarkus.app-nees-nui-app.svc.cluster.local
+            subset: testing
+            port:
+              number: 9000
