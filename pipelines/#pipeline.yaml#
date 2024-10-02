@@ -1,8 +1,8 @@
+---
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: build-and-deploy
-
 spec:
   workspaces:
     - name: app-build

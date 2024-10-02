@@ -1,0 +1,181 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline-maven
+spec:
+  workspaces:
+    - name: source-workspace  
+    - name: maven-settings
+    - name: maven-results
+  params:
+  - name: GIT_URL
+    description: 'Repository URL to clone from.'
+    type: string
+    default: ""
+  - name: GIT_REVISION
+    description: 'Revision to checkout. (branch, tag, sha, ref, etc...)'
+    type: string
+    default: "main"
+  - name: MVN_GOALS
+    description: 'maven goals to run'
+    default:
+      - clean
+      - package
+  - name: MVN_CONTEXT_DIR
+    description: 'The context directory within the repository for sources on which we want to execute maven goals.'
+    default: '.'
+  - name: MVN_IMAGE
+    description: Image to use for Maven goals
+    type: string
+    default: 'registry.redhat.io/ubi8/openjdk-21'
+
+    
+  tasks:
+
+    # fetch repository
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      workspaces:
+        - name: output
+          workspace: source-workspace
+      params:
+        - name: url
+          value: $(params.GIT_URL)
+        - name: revision
+          value: $(params.GIT_REVISION)
+        - name: sslVerify
+          value: 'false'
+
+    # verify build
+    - name: verify-build-install
+      taskref:
+        name: maven
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source-workspace
+        - name: maven-settings
+          workspace: maven-settings 
+      params:
+        - name: GOALS
+          value:
+            - clean
+            - install 
+        - name: CONTEXT_DIR
+          value: $(params.MVN_CONTEXT_DIR)
+        - name: MAVEN_IMAGE
+          value: $(params.MVN_IMAGE)
+      runAfter:
+        - fetch-repository      
+
+    # verify build
+    - name: verify-build-verify
+      taskref:
+        name: maven
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source-workspace
+        - name: maven-settings
+          workspace: maven-settings 
+      params:
+        - name: GOALS
+          value:
+            - clean
+            - verify
+            - artifact:compare
+        - name: CONTEXT_DIR
+          value: $(params.MVN_CONTEXT_DIR)
+        - name: MAVEN_IMAGE
+          value: $(params.MVN_IMAGE)
+      runAfter:
+        - verify-build-install        
+
+    # Code Analysis
+
+    # Save Test Results
+
+    # Code Analysis Check
+
+    # Kube-linter
+
+    # maven goals
+    - name: maven-goals
+      taskRef:
+        name: maven
+        kind: ClusterTask
+      workspaces:
+        - name: source
+          workspace: source-workspace
+        - name: maven-settings
+          workspace: maven-settings
+      params:
+        - name: GOALS
+          value: "$(params.MVN_GOALS[*])"
+        - name: CONTEXT_DIR
+          value: $(params.MVN_CONTEXT_DIR)
+        - name: MAVEN_IMAGE
+          value: $(params.MVN_IMAGE)
+      runAfter:
+        - verify-build-verify
+        
+        
+#    - name: dumper
+#      taskRef:
+#        name: dump-mvn-settings
+#        kind: Task
+#      workspaces:
+#        - name: maven-settings
+#          workspace: maven-settings          
+#      runAfter:
+#        - maven-goals
+
+        
+    # image build
+
+    # image scan
+
+    # helm package
+
+    # fetch argocd configuration
+
+    # deploy test
+
+    # verify deployment
+
+    # Cosign Image Sign
+
+    # Generate and Attest SBOM
+
+    # Pen Testing
+
+    # Load Testing
+
+  # results:
+  #   - name: VERSION
+  #     description: Version of the application
+  #     value: "$(tasks.maven.results.VERSION)"
+  #   # - name: CHART_VERSION
+  #   #   description: Version of the helm chart
+  #   #   value: "$(tasks.helm-package.results.CHART_VERSION)"
+  #   # - name: PREVIOUS_CHART_VERSION
+  #   #   description: Version of currently applied chart
+  #   #   value: "$(tasks.deploy-test.results.PREVIOUS_CHART_VERSION)"
+  #   - name: PREVIOUS_VERSION
+  #     description: Version of currently running app
+  #     value: "$(tasks.deploy-test.results.PREVIOUS_VERSION)"
+
+        
+  results:
+    - description: The precise commit SHA that was fetched by this Task.
+      name: GIT_COMMIT_SHA
+      value: "$(tasks.fetch-repository.results.commit)"
+    - description: The precise URL that was fetched by this Task.
+      name: GIT_FETCH_URL
+      value: "$(tasks.fetch-repository.results.url)"
+    - description: The epoch timestamp of the commit that was fetched by this Task.
+      name: GIT_COMMIT_DATE
+      value: "$(tasks.fetch-repository.results.committer-date)"

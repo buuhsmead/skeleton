@@ -1,3 +1,4 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -17,3 +18,7 @@ images:
 - name: localhost/grpcurl
   newName: quay.io/hdaems/ubi8-grpcurl
   newTag: latest
+
+commonLabels:
+  name: hallo
+  

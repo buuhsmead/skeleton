@@ -1,0 +1,52 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: pipeline-maven-run-
+  finalizers:
+    - chains.tekton.dev/pipelinerun
+  labels:
+    tekton.dev/pipeline: maven-pipeline
+spec:
+  params:
+    - name: GIT_URL
+      value: 'https://github.com/buuhsmead/skeleton.git'
+    - name: MVN_GOALS
+      value:
+        - '-DskipTests'
+        - clean
+        - package      
+    - name: MVN_CONTEXT_DIR
+      value: 'apps/grpc-with-quarkus'
+  pipelineRef:
+    name: pipeline-maven
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: source-workspace
+      persistentVolumeClaim:
+        claimName: source-maven-m2-cache
+#      volumeClaimTemplate:
+#        spec:
+#          accessModes:
+#            - ReadWriteOnce
+#          resources:
+#            requests:
+#              storage: 1Gi
+    - name: maven-settings
+      configmap:
+        name: maven-settings    
+#    - name: maven-m2
+#      persistentVolumeClaim:
+#        claimName: maven-m2
+#    - name: maven-settings
+#      configmap:
+#        name: maven-settings
+#    - name: maven-m2
+#      volumeClaimTemplate:
+#        spec:
+#          accessModes:
+#            - ReadWriteOnce
+#          resources:
+#            requests:
+#              storage: 1Gi  

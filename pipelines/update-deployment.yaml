@@ -1,8 +1,10 @@
+---
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: update-deployment
 spec:
+  
   params:
     - name: DEPLOYMENT
       description: The name of the deployment patch the image

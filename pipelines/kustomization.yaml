@@ -9,4 +9,4 @@ resources:
   - pipeline.yaml
 #  - source-pvc.yaml
   - pipeline-run.yaml
-#  - update-deployment-task.yaml
+#  - update-deployment.yaml
